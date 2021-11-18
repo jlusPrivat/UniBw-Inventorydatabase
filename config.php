@@ -4,6 +4,7 @@ if (!defined('INVDB'))
 
 $CONFIG = [
 	'basepath' => 'http://192.168.1.3/invDB/',
+	'title' => 'UniBwM Inventarisierungsdatenbank',
 	'mysql' => [
 		'host' => 'localhost',
 		'user' => 'testuser',
@@ -16,7 +17,7 @@ $CONFIG = [
 		'host' => 'apfel.rocks',
 		'auth' => true,
 		'username' => 'testuser@apfel.rocks',
-		'password' => '!!!',
+		'password' => '',
 		'senderAddress' => 'testuser@apfel.rocks',
 		'senderName' => 'UniBwM Inventar',
 		'security' => 'tls', // alternatively ssl

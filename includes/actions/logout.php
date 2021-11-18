@@ -4,6 +4,7 @@ if (!defined('INVDB'))
 
 if (($_GET['CSRF'] ?? '') == $SESS['CSRF']) {
     unset($SESS['UID']);
+    $USER = NULL;
     $SUCCMSG[] = 'Sie wurden erfolgreich abgemeldet.';
     $NEXTACTION = 'login';
     return;

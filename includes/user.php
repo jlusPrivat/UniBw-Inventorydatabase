@@ -10,7 +10,7 @@ class User {
     public string $email;
     public ?string $emailVerification;
     public DateTime $validUntil;
-    public array $groups;
+    public array $groups = array();
     
     
     /* constructs the instance based on a user id */
@@ -44,9 +44,24 @@ class User {
 
 
 
-    /* Writes the properties of this member into the database.
-    Return true when successfull, false otherwise */
-    public function writeProperties (): bool {
+    /* Returns true, if user is in any administrative group */
+    public function isAdmin (): bool {
+        foreach ($this->groups as $group) {
+            if ($group->isAdmin())
+                return true;
+        }
+        return false;
+    }
+
+
+
+    /* Checks, whether a permission for this user exists in any of the groups related to
+    either a specific institute or, if set to NULL, any institute */
+    public function hasPermission (string $descriptor, ?Inventory $inst): bool {
+        foreach ($this->groups as $group) {
+            if ($group->hasPermission($descriptor, $inst))
+                return true;
+        }
         return false;
     }
 
@@ -90,7 +105,7 @@ class User {
         
         // identify if UID or RZID and get hashed non-ldap password
         $matches;
-        if (preg_match('/^U([0-9]{1,10})$/', $id, $matches)) {
+        if (preg_match('/^U([0-9]{1,10})$/i', $id, $matches)) {
             $usr = $DB->query('SELECT UID, RZID, valid_until, password FROM id_users
                               WHERE UID = "' . $matches[1] . '"')->fetch_assoc();
         }

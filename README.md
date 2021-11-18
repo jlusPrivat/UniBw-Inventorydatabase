@@ -6,12 +6,12 @@ This inventory database provides these functionalities:
 - MySQL / MariaDB
 
 ## User management
-- [ ] Values: ID, RZ-ID, email, valid until, groups
-- [ ] Local user / password database
-- [ ] UniBw LDAP ID. All users are automatically transferred to local database (with information)
+- [X] Values: ID, RZ-ID, email, valid until, groups
+- [X] Local user / password database
+- [X] UniBw LDAP ID. All users are automatically transferred to local database (with information)
 - [ ] Users are automatically removed in configurable intervals (if not used).
-- [ ] Groups (administrator, moderator, lender, viewer) each permissive and denying
-- [ ] Group Permissions: May lend from inst, May return to inst, May manage users from inst, may configure global settings incl groups and institutes
+- [X] Groups (administrator, moderator, lender, viewer) each permissive and denying
+- [X] Group Permissions: May lend from inst, May return to inst, May manage users from inst, may configure global settings incl groups and institutes
 
 ## Inventory management
 - [ ] Synonyms for Manufacturers and Items

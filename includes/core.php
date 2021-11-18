@@ -5,6 +5,7 @@ if (!defined('INVDB'))
 // include the configuration file
 require_once 'config.php';
 require_once 'includes/funcs.php';
+require_once 'includes/inventory.php';
 require_once 'includes/user.php';
 require_once 'includes/group.php';
 
@@ -40,6 +41,7 @@ if ($DB->connect_errno)
     lg(2, 'Could not connect to database');
 
 // load all groups
+Inventory::reloadInventories();
 Group::reloadGroups();
 
 // load the current user, if set
