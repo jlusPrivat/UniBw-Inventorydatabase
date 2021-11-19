@@ -51,7 +51,8 @@ abstract class Field {
         protected ?string $groupCss = NULL,
         protected ?closure $validator = NULL, // default: function (string $input): bool {return true;}
         protected ?string $invalidMsg = NULL,
-        protected ?closure $sanitizer = NULL // default: function (string $input): mixed {return input;} 
+        protected ?closure $sanitizer = NULL, // default: function (string $input): mixed {return input;}
+        protected mixed $defaultContent = ''
     ) {}
 
     public function getName(): string {
@@ -74,10 +75,11 @@ abstract class Field {
     }
 
     public function getFieldContent (): mixed {
+        $content = $_POST[$this->name] ?? $this->defaultContent;
         if ($this->sanitizer != NULL)
-            return ($this->sanitizer)($_POST[$this->name] ?? '');
+            return ($this->sanitizer)($content);
         else
-            return $_POST[$this->name] ?? '';
+            return $content;
     }
 }
 
@@ -127,6 +129,73 @@ class Passwordfield extends Field {
         . $this->invalidMsg . '</div>' : '')
         . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
         . '</div>';
+    }
+}
+
+class Textareafield extends Field {
+    private int $rows = 3;
+
+    /* Default Field constructor extended by a rows element */
+    public function __construct (mixed ...$args) {
+        if (isset($args['rows'])) {
+            $this->rows = $args['rows'];
+            unset($args['rows']);
+        }
+        parent::__construct(...$args);
+    }
+
+    public function getFieldGroup (bool $markValidity): string {
+        $isValid = $this->isValid();
+        return '<div class="form-group' . ($this->groupCss !== NULL ? ' ' . $this->groupCss : '') . '">
+        <label for="' . $this->name . '">' . $this->fulltext 
+        . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
+        . '</label><textarea rows="' . $this->rows . '" class="form-control'
+        . ($markValidity ? ($isValid ? ' is-valid' : ' is-invalid') : '')
+        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '">'
+        . $this->getFieldContent() . '</textarea>'
+        . ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
+        . $this->invalidMsg . '</div>' : '')
+        . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
+        . '</div>';
+    }
+}
+
+class Boxfield extends Field {
+    private array $boxes = array();
+
+    // type "checkbox" or "radio"
+    public function addBox (string $type, string $value, string $description): Boxfield {
+        $this->boxes[] = ['type' => $type, 'value' => $value, 'description' => $description];
+        return $this;
+    }
+
+    public function getFieldGroup (bool $markValidity): string {
+        $isValid = $this->isValid();
+        $content = $this->getFieldContent();
+        $returner = '<div class="form-group' . ($this->groupCss !== NULL ? ' ' . $this->groupCss : '') . '">
+        <label for="' . $this->name . '">' . $this->fulltext 
+        . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
+        . '</label>';
+        foreach ($this->boxes as $i => $box) {
+            $returner .= '<div class="form-check"><input type="' . $box['type']
+            . '" name="' . $this->name . '[]" value="' . $box['value']
+            . '" class="form-check-input" id="' . $this->name . '-' . $i . '"'
+            . (is_array($content) && in_array($box['value'], $content) ? ' checked' : '')
+            . '><label class="form-check-label" for="' . $this->name
+            . '-' . $i . '">' . $box['description'] . '</label></div>';
+        }
+        $returner .= ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
+        . $this->invalidMsg . '</div>' : '')
+        . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
+        . '</div>';
+        return $returner;
+    }
+}
+
+class Hiddenfield extends Field {
+    public function getFieldGroup (bool $markValidity): string {
+        return '<input type="hidden" name="' . $this->name
+        . '" value="' . $this->getFieldContent() . '">';
     }
 }
 

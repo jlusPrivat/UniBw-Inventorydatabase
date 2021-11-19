@@ -2,6 +2,7 @@
 /*
 $HEADING: The HTML title
 $ECHO: The main content
+$SCRIPT: Any content after the default script includes. Must utilize its own <script> tags
 $ERRMSG: array of error messages
 $WARNMSG: array of warnings
 $SUCCMSG: array of success messages
@@ -19,6 +20,7 @@ if (!defined('INVDB'))
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <title>InvDB <?=$HEADING?></title>
     <link href="html/bootstrap.min.css" rel="stylesheet">
+    <link href="imgs/icons/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body><div class="container">
 
@@ -38,7 +40,9 @@ if (!defined('INVDB'))
               echo '<li class="nav-item dropdown">'
               . '<a href="#" class="nav-link dropdown-toggle'
               // is any item the currently active link?
-              . (array_reduce($act->children, fn($carry, $item) => $item->short == $ACTION, false) ? ' active' : '')
+              . (array_reduce($act->children,
+                fn($carry, $item) => $carry || ($item->short == $ACTION), false)
+                ? ' active' : '')
               . '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
               . $act->long . '</a><div class="dropdown-menu">';
               foreach ($act->children as $child) {
@@ -147,7 +151,8 @@ if (!defined('INVDB'))
     </footer>
     
 </div>
-<script src="html/jquery.slim.min.js"></script>
+<script src="html/jquery.min.js"></script>
 <script src="html/bootstrap.bundle.min.js"></script>
+<?php echo ($SCRIPT ?? ''); ?>
 </body>
 </html>

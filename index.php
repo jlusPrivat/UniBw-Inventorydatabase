@@ -11,11 +11,9 @@ $ac_isNotLoggedIn = function () use (&$USER) {return is_null($USER);};
 $ac_enableRegister = function () use (&$USER, &$CONFIG)
 	{return is_null($USER) && $CONFIG['auth']['allow-guest-registration'];};
 $ac_dropdownUserMenu = function () use (&$USER)
-	{return isset($USER)
-	&& ($USER->hasPermission('manage_users', NULL) || $USER->isAdmin());};
+	{return isset($USER) && $USER->hasPermission('manage_users', NULL);};
 $ac_simpleUserMenu = function () use (&$USER)
-	{return !isset($USER)
-	|| !($USER->hasPermission('manage_users', NULL) || $USER->isAdmin());};
+	{return isset($USER) && !$USER->hasPermission('manage_users', NULL);};
 $ac_isAdmin = function () use (&$USER) {return $USER?->isAdmin() ?? false;};
 
 $actions = [
@@ -49,7 +47,7 @@ $actions = [
 
 // determine the current action
 foreach ($actions as $act) {
-	if ($act->short == ($_GET['action'] ?? '') && $act->isActive()) {
+	if ($act->short == ($_GET['action'] ?? '') && $act->isActive() && $act->short != '') {
 		$ACTION = $act->short;
 		break;
 	}

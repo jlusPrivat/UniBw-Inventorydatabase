@@ -38,8 +38,11 @@ class Group {
 
 
 	/* Checks, whether a permission for this user exists in any of the groups related to
-    either a specific institute or, if set to NULL, any institute */
+    either a specific institute or, if set to NULL, any institute
+	always returns true, if administrator */
 	public function hasPermission (string $descriptor, ?Inventory $inst): bool {
+		if ($this->admin)
+			return true;
 		if (!$inst) {
 			foreach ($this->permissions as $perm) {
 				// permission found and granted for any inventory
