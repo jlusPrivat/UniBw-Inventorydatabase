@@ -4,7 +4,9 @@ if (!defined('INVDB'))
 
 $formEdit = new Form();
 $formEdit->addField(new CSRFfield());
-$formEdit->addField(new Hiddenfield('editGID', '', true));
+$formEdit->addField(new Hiddenfield('editGID', '', true,
+    validator: fn(string $input) => is_numeric($input) || $input == 'new'
+));
 $formEdit->addField(new Textfield('name', 'Gruppenname', true,
     subtext: 'Muss zwischen 4 und 30 Zeichen lang sein',
     groupCss: 'mb-3',
@@ -15,12 +17,55 @@ $formEdit->addField((new Boxfield('special', 'Spezielle Berechtigungen', false))
 
 $formRemove = new Form();
 $formRemove->addField(new CSRFfield());
-$formRemove->addField(new Hiddenfield('removeGID', '', true));    
+$formRemove->addField(new Hiddenfield('removeGID', '', true,
+    validator: fn(string $input) => is_numeric($input)
+));
+
+
+if ($formEdit->wasSent()) {
+    // edit or new group form sent
+    if (!$formEdit->isValid())
+        $ERRMSG[] = 'Der Gruppenname ist nicht gültig';
+    else {
+        // check, if name is already in use
+        $gid = $formEdit->getFieldContent('editGID');
+        $name = $formEdit->getFieldContent('name');
+        $admin = in_array('admin', $formEdit->getFieldContent('special'));
+        $res = $DB->query('SELECT GID FROM id_groups WHERE name = "'
+        . $DB->real_escape_string($name) . '"' . ($gid != 'new' ? ' AND GID <> "'
+        . $DB->real_escape_string($gid) . '"' : '') . ' LIMIT 1');
+        if ($res->num_rows > 0)
+            $ERRMSG[] = 'Der Gruppenname ist bereits vergeben';
+        
+        else {
+            // write to database
+            if ($gid == 'new') {
+                $DB->query('INSERT INTO id_groups (name, admin) VALUES ("'
+                . $DB->real_escape_string($name) . '", ' . ($admin ? '1' : '0') . ')');
+                $SUCCMSG[] = 'Die Gruppe <samp>' . $name . '</samp> wurde erfolgreich angelegt';
+            }
+            else {
+                $DB->query('UPDATE id_groups SET name = "' . $DB->real_escape_string($name)
+                . '", admin = ' . ($admin ? '1' : '0') . ' WHERE GID = "'
+                . $DB->real_escape_string($gid) . '" LIMIT 1');
+                $SUCCMSG[] = 'Die Gruppe <samp>' . $name . '</samp> wurde erfolgreich bearbeitet';
+            }
+        }
+    }
+}
+
+else if ($formRemove->wasSent() && $formRemove->isValid()) {
+    $gid = $formRemove->getFieldContent('removeGID');
+    $DB->query('DELETE FROM id_match_ug WHERE GID = "' . $DB->real_escape_string($gid) . '"');
+    $DB->query('DELETE FROM id_match_gi WHERE GID = "' . $DB->real_escape_string($gid) . '"');
+    $DB->query('DELETE FROM id_groups WHERE GID = "' . $DB->real_escape_string($gid) . '" LIMIT 1');
+    $SUCCMSG[] = 'Gruppe wurde erfolgreich gelöscht.';
+}
 
 
 // fetch all groups and display
 $groups = $DB->query('SELECT A.GID, name, admin, COUNT(B.UID) AS usrcnt
-FROM id_groups A RIGHT JOIN id_match_ug B ON A.GID = B.GID GROUP BY A.GID');
+FROM id_groups A LEFT JOIN id_match_ug B ON A.GID = B.GID GROUP BY A.GID');
 
 $HEADING = 'Gruppen';
 $ECHO = '<h3 class="mt-0 mb-3 p-0">Gruppenverwaltung</h3>

@@ -163,6 +163,12 @@ class Textareafield extends Field {
 class Boxfield extends Field {
     private array $boxes = array();
 
+    public function __construct(...$args) {
+        if (!isset($args['defaultContent']))
+            $args['defaultContent'] = array();
+        parent::__construct(...$args);
+    }
+
     // type "checkbox" or "radio"
     public function addBox (string $type, string $value, string $description): Boxfield {
         $this->boxes[] = ['type' => $type, 'value' => $value, 'description' => $description];
