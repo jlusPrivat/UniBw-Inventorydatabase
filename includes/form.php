@@ -52,7 +52,8 @@ abstract class Field {
         protected ?closure $validator = NULL, // default: function (string $input): bool {return true;}
         protected ?string $invalidMsg = NULL,
         protected ?closure $sanitizer = NULL, // default: function (string $input): mixed {return input;}
-        protected mixed $defaultContent = ''
+        protected mixed $defaultContent = '',
+        protected string $fieldmodifier = ''
     ) {}
 
     public function getName(): string {
@@ -66,7 +67,7 @@ abstract class Field {
     }
 
     public function isValid (): bool {
-        $content = $_POST[$this->name] ?? '';
+        $content = $this->getFieldContent();
         if ($this->required && empty($content))
             return false;
         if (!empty($content) && $this->validator != NULL && !($this->validator)($content))
@@ -92,7 +93,8 @@ class Textfield extends Field {
         . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
         . '</label><input type="text" value="' . $this->getFieldContent() . '" class="form-control'
         . ($markValidity ? ($isValid ? ' is-valid' : ' is-invalid') : '')
-        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '">'
+        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '"'
+        . $this->fieldmodifier . '>'
         . ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
         . $this->invalidMsg . '</div>' : '')
         . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
@@ -108,7 +110,8 @@ class Mailfield extends Field {
         . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
         . '</label><input type="email" value="' . $this->getFieldContent() . '" class="form-control'
         . ($markValidity ? ($isValid ? ' is-valid' : ' is-invalid') : '')
-        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '">'
+        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '"'
+        . $this->fieldmodifier . '>'
         . ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
         . $this->invalidMsg . '</div>' : '')
         . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
@@ -124,7 +127,8 @@ class Passwordfield extends Field {
         . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
         . '</label><input type="password" class="form-control'
         . ($markValidity ? ($isValid ? ' is-valid' : ' is-invalid') : '')
-        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '">'
+        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '"'
+        . $this->fieldmodifier . '>'
         . ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
         . $this->invalidMsg . '</div>' : '')
         . ($this->subtext !== NULL ? '<small class="form-text text-muted">' . $this->subtext . '</small>' : '')
@@ -151,7 +155,7 @@ class Textareafield extends Field {
         . ($this->required ? ' <abbr style="color: red" title="Pflichtfeld">*</abbr>' : '')
         . '</label><textarea rows="' . $this->rows . '" class="form-control'
         . ($markValidity ? ($isValid ? ' is-valid' : ' is-invalid') : '')
-        . '" name="' . $this->name . '" placeholder="' . $this->fulltext . '">'
+        . '" name="' . $this->name . '"' . $this->fieldmodifier . '>'
         . $this->getFieldContent() . '</textarea>'
         . ($markValidity && !$isValid && $this->invalidMsg !== NULL ? '<div class="invalid-feedback">'
         . $this->invalidMsg . '</div>' : '')
@@ -201,7 +205,8 @@ class Boxfield extends Field {
 class Hiddenfield extends Field {
     public function getFieldGroup (bool $markValidity): string {
         return '<input type="hidden" name="' . $this->name
-        . '" value="' . $this->getFieldContent() . '">';
+        . '" value="' . $this->getFieldContent() . '"'
+        . $this->fieldmodifier . '>';
     }
 }
 
